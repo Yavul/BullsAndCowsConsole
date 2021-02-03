@@ -1,171 +1,168 @@
 ﻿using System;
+using System.Linq;
+
 
 namespace BullsAndCowsConsole
 {
     class Program
     {
-        static public int GetNumber()
+        static void Intro()
         {
-            int randomInt = new Random().Next(9);
-            return randomInt;
+            Console.WriteLine("Welcome to Bulls and Cows.");
+            Console.WriteLine("For tutorial how to play the game press F1.");
+            Console.WriteLine("Press any key to continue.");
+
+            if (Console.ReadKey().Key == ConsoleKey.F1)
+            {
+                Console.WriteLine("\nOne player, the Chooser(me), thinks of a four-digit number and the other player, the Guesser(you), tries to guess it.\n\n" +
+                    "At each turn the Guesser tries a four-digit number, and the Chooser says how close it is to the answer by giving:\n" +
+                    "The number of Bulls - correct digits in the right position.\n" +
+                    "The number of Cows - correct digits but in the wrong position.\n\n" +
+                    "The Guesser tries to guess the answer in the fewest number of turns.\n" +
+                    "The four-digit number can start with 0 and dublicates are not allowed.\n\n" +
+                    "Now give it a try.\n");
+            }
         }
 
-        static bool isDigitsOnly(string str)
+        static bool IsDigitsOnly(string str)
         {
-            try
+            int q = str.Length;
+
+            for (int i = 0; i < q; i++)
             {
-                int num = Convert.ToInt32(str);
-                return true;
+                if (Convert.ToByte(str[i]) < 48 | Convert.ToByte(str[i]) > 57)
+                /*  48 is the Byte value of 0
+                    57 is the Byte value of 9*/
+                {
+                    return false;
+                }
             }
-            catch
-            {
-                return false;
-            }
+            return true;
         }
 
-        static int[] generateSolution2() // NOT USED
+        static int[] GenerateAnswer()
         {
-            int[] sol = new int[4];
+            int randomInt;
+            int[] generatedAnswer = new int[4];
 
-            sol[0] = GetNumber();
-            do
+            for (int i = 0; i < 4; i++)
             {
-                sol[1] = GetNumber();
+                randomInt = new Random().Next(9);
+                if (!generatedAnswer.Contains(randomInt))
+                    generatedAnswer[i] = randomInt;
+                else
+                    i--;
             }
-            while (sol[1] == sol[0]);
-            do
-            {
-                sol[2] = GetNumber();
-            }
-            while (sol[2] == sol[0] | sol[2] == sol[1]);
-            do
-            {
-                sol[3] = GetNumber();
-            }
-            while (sol[3] == sol[0] | sol[3] == sol[1] | sol[3] == sol[2]);
-            return sol;
+            return generatedAnswer;
         }
 
-
-        static int generateSolution()
-        {
-            int A;
-            do
-            {
-                A = GetNumber();
-            }
-            while (A == 0);
-            int B;
-            do
-            {
-                B = GetNumber();
-            }
-            while (A == B);
-            int C;
-            do
-            {
-                C = GetNumber();
-            }
-            while (C == A | C == B);
-            int D;
-            do
-            {
-                D = GetNumber();
-            }
-            while (D == A | D == B | D == C);
-            int solution = A * 1000 + B * 100 + C * 10 + D;
-            return solution;
-        }
-
-        static void checkAnswer(string input, int toCheckSolution)
+        static bool CheckGuess2(string toCheckGuessString, int[] toCheckAnswer)
         {
             int bulls = 0;
             int cows = 0;
+            int toCheckGuessFull = Convert.ToInt32(toCheckGuessString);
+            int[] toCheckGuess = new int[4];
 
-            int solutionDig1 = (toCheckSolution / 1000);
-            int solutionDig2 = (toCheckSolution / 100) % 10;
-            int solutionDig3 = (toCheckSolution / 10) % 10;
-            int solutionDig4 = toCheckSolution % 10;
+            toCheckGuess[0] = (toCheckGuessFull / 1000);
+            toCheckGuess[1] = (toCheckGuessFull / 100) % 10;
+            toCheckGuess[2] = (toCheckGuessFull / 10) % 10;
+            toCheckGuess[3] = toCheckGuessFull % 10;
+            
+            for (int i = 0 ; i < 4; i++)
+            {
+                if (toCheckGuess[i] == toCheckAnswer[i])
+                    bulls++;
+            }
 
-            int guessSolution = Convert.ToInt32(input);
-            int Dig1 = (guessSolution / 1000);
-            int Dig2 = (guessSolution / 100) % 10;
-            int Dig3 = (guessSolution / 10) % 10;
-            int Dig4 = guessSolution % 10;
+            if (bulls == 4)
+            {
+                return true;
+            }
+            else
+                for (int i = 0; i < 4; i++)
+                {
+                    if (toCheckAnswer.Contains(toCheckGuess[i]))
+                    {
+                        cows++;
+                    }
+                }
 
-
-            if (Dig1 == solutionDig1) { bulls++; }
-            if (Dig2 == solutionDig2) { bulls++; }
-            if (Dig3 == solutionDig3) { bulls++; }
-            if (Dig4 == solutionDig4) { bulls++; }
-
-            if (Dig1 == solutionDig2) { cows++; }
-            else if (Dig1 == solutionDig3) { cows++; }
-            else if (Dig1 == solutionDig4) { cows++; }
-
-            if (Dig2 == solutionDig1) { cows++; }
-            else if (Dig2 == solutionDig3) { cows++; }
-            else if (Dig2 == solutionDig4) { cows++; }
-
-            if (Dig3 == solutionDig1) { cows++; }
-            else if (Dig3 == solutionDig2) { cows++; }
-            else if (Dig3 == solutionDig4) { cows++; }
-
-            if (Dig4 == solutionDig1) { cows++; }
-            else if (Dig4 == solutionDig2) { cows++; }
-            else if (Dig4 == solutionDig3) { cows++; }
-
-
+            cows -= bulls;
             Console.WriteLine("Bulls: " + bulls + " and Cows: " + cows);
+            return false;
+        }
+
+        static string PromptGuess()
+        {
+            string guessString = Console.ReadLine();
+
+            while (guessString.Length != 4 | IsDigitsOnly(guessString) == false)
+            {
+
+                Console.WriteLine("Please enter 4 digits.");
+                guessString = Console.ReadLine();
+
+            }
+            return guessString;
+        }
+
+        static void GameAftermath(int turns)
+        {
+            if (turns == 1)
+            {
+                Console.WriteLine("Fat chance! Go guessed my number from the first try.");
+            }
+
+            else
+            {
+                Console.WriteLine("Good job! You guessed my number with " + turns + " guesses.");
+
+                if (turns < 4)
+                {
+                    Console.WriteLine("That's very impressive!");
+                }
+                else if (turns > 8)
+                {
+                    Console.WriteLine("Hint for the next game - start thinking...");
+                }
+            }
+            Console.WriteLine("Press any key to restart, press Esc to close.");
+
+            var finalChoice = Console.ReadKey();
+            Console.Clear();
+            if (finalChoice.Key == ConsoleKey.Escape)
+            {
+                Environment.Exit(0);
+            }
+
         }
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Bulls and Cows.");
-            for ( ; ; )
+            Intro();
+
+            for (; ; )
             {
-                int turns = 1;
-                int Solution = generateSolution();
+                int[] arrayAnswer = GenerateAnswer();
+                int turnsPlayed = 1;
                 Console.WriteLine("I have created a random 4 digits number. Try to guess it.");
 
-                for ( ; ; )
+                for (; ; )
                 {
 
                     Console.WriteLine("Write your guess.");
-                    string guessSolutionString = Console.ReadLine();
+                    string validGuessString = PromptGuess();
 
-                    while (guessSolutionString.Length != 4 | isDigitsOnly(guessSolutionString) == false)
-                    {
-
-                            Console.WriteLine("Please enter 4 digits.");
-                            guessSolutionString = Console.ReadLine();
-
-                    }
-
-
-                    if (Convert.ToInt32(guessSolutionString) == Solution)
+                    if (CheckGuess2(validGuessString, arrayAnswer))
                     {
                         break;
                     }
-
-                    checkAnswer(guessSolutionString, Solution);
-                    turns++;
+                    else
+                    {
+                        turnsPlayed++;
+                    }
                 }
-                Console.WriteLine("Good job! You guessed my number with "+ turns + " guesses.");
-                if (turns <4)
-                {
-                    Console.WriteLine("That's very impressive!");
-                }
-                else if (turns>8)
-                {
-                    Console.WriteLine("Hint for the next game - start thinking...");
-                }
-                Console.WriteLine("Press any key to restart, press Esc to close.");
-
-                var finalChoice = Console.ReadKey();
-                Console.Clear();
-                if (finalChoice.Key == ConsoleKey.Escape)
-                    Environment.Exit(0);
+                GameAftermath(turnsPlayed);
             }
         }
     }
