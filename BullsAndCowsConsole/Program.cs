@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Linq;
 
 
 namespace BullsAndCowsConsole
 {
     class Program
     {
-        static void Intro()
+        static void ShowIntro()
         {
             Console.WriteLine("Welcome to Bulls and Cows.");
             Console.WriteLine("For tutorial how to play the game press F1.");
@@ -24,53 +23,72 @@ namespace BullsAndCowsConsole
             }
         }
 
-        static bool IsDigitsOnly(string str)
+        static bool IsNumber(string str)
         {
             int q = str.Length;
 
             for (int i = 0; i < q; i++)
             {
-                if (Convert.ToByte(str[i]) < 48 | Convert.ToByte(str[i]) > 57)
-                /*  48 is the Byte value of 0
-                    57 is the Byte value of 9*/
+                if (str[i] >= '0' && str[i] <= '9')
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
 
-        static int[] GenerateAnswer()
+        static bool ContainmentCheck(int input, int[] existingArray)
+        {
+            int lengthArray = existingArray.Length;
+            for (int i = 0; i < lengthArray; i++)
+            {
+                if (existingArray[i] == input)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static int[] GenerateProblem()
         {
             int randomInt;
-            int[] generatedAnswer = new int[4];
-
-            for (int i = 0; i < 4; i++)
+            int[] generatedProblem = { };
+            while (generatedProblem.Length < 4)
             {
+                int len = generatedProblem.Length;
                 randomInt = new Random().Next(9);
-                if (!generatedAnswer.Contains(randomInt))
-                    generatedAnswer[i] = randomInt;
-                else
-                    i--;
+
+                if (!ContainmentCheck(randomInt, generatedProblem))
+                {
+                    Array.Resize(ref generatedProblem, len + 1);
+                    generatedProblem[len] = randomInt;
+                }
             }
-            return generatedAnswer;
+            return generatedProblem;
         }
 
-        static bool CheckGuess2(string toCheckGuessString, int[] toCheckAnswer)
+        static int[] StringToIntArray(string input)
+        {
+            int len = input.Length;
+            int[] distributedDigits = new int[len];
+            for (int i = 0; i < len; i++)
+            {
+                distributedDigits[i] = input[i] - 48; //48 is the char value of 0
+            }
+            return distributedDigits;
+        }
+
+        static bool CheckGuess(string toCheckGuessString, int[] toCheckProblem)
         {
             int bulls = 0;
             int cows = 0;
-            int toCheckGuessFull = Convert.ToInt32(toCheckGuessString);
-            int[] toCheckGuess = new int[4];
 
-            toCheckGuess[0] = (toCheckGuessFull / 1000);
-            toCheckGuess[1] = (toCheckGuessFull / 100) % 10;
-            toCheckGuess[2] = (toCheckGuessFull / 10) % 10;
-            toCheckGuess[3] = toCheckGuessFull % 10;
+            int[] toCheckGuess = StringToIntArray(toCheckGuessString);                    
             
             for (int i = 0 ; i < 4; i++)
             {
-                if (toCheckGuess[i] == toCheckAnswer[i])
+                if (toCheckGuess[i] == toCheckProblem[i])
                     bulls++;
             }
 
@@ -78,14 +96,13 @@ namespace BullsAndCowsConsole
             {
                 return true;
             }
-            else
-                for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
+            {
+                if (ContainmentCheck(toCheckGuess[i], toCheckProblem))
                 {
-                    if (toCheckAnswer.Contains(toCheckGuess[i]))
-                    {
-                        cows++;
-                    }
+                    cows++;
                 }
+            }
 
             cows -= bulls;
             Console.WriteLine("Bulls: " + bulls + " and Cows: " + cows);
@@ -96,7 +113,7 @@ namespace BullsAndCowsConsole
         {
             string guessString = Console.ReadLine();
 
-            while (guessString.Length != 4 | IsDigitsOnly(guessString) == false)
+            while (guessString.Length != 4 | IsNumber(guessString) == false)
             {
 
                 Console.WriteLine("Please enter 4 digits.");
@@ -110,7 +127,7 @@ namespace BullsAndCowsConsole
         {
             if (turns == 1)
             {
-                Console.WriteLine("Fat chance! Go guessed my number from the first try.");
+                Console.WriteLine("Fat chance! You guessed my number from the first try.");
             }
 
             else
@@ -139,11 +156,11 @@ namespace BullsAndCowsConsole
 
         static void Main(string[] args)
         {
-            Intro();
+            ShowIntro();
 
             for (; ; )
             {
-                int[] arrayAnswer = GenerateAnswer();
+                int[] correctDigits = GenerateProblem();
                 int turnsPlayed = 1;
                 Console.WriteLine("I have created a random 4 digits number. Try to guess it.");
 
@@ -153,7 +170,7 @@ namespace BullsAndCowsConsole
                     Console.WriteLine("Write your guess.");
                     string validGuessString = PromptGuess();
 
-                    if (CheckGuess2(validGuessString, arrayAnswer))
+                    if (CheckGuess(validGuessString, correctDigits))
                     {
                         break;
                     }
